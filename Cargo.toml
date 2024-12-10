@@ -1,0 +1,9 @@
+[package]
+name = "dudist"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+byte-unit = "5.1.6"
+rayon = "1.10.0"
+walkdir = "2.5.0"
