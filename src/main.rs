@@ -4,18 +4,6 @@ use walkdir::WalkDir;
 
 use libc::{ioctl, isatty, STDOUT_FILENO, TIOCGWINSZ};
 
-// pub fn get_terminal_width() -> Option<u16> {
-//     let fd = STDIN_FILENO;
-//     let mut ws: libc::winsize = unsafe { std::mem::zeroed() };
-//
-//     unsafe {
-//         if ioctl(fd, TIOCGWINSZ, &mut ws as *mut _) != -1 {
-//             return Some(u16::try_from(ws.ws_col).ok()?);
-//         }
-//     }
-//
-//     None
-// }
 pub fn get_terminal_width() -> Option<u16> {
     // Check if stdout is a terminal first to avoid unnecessary unsafe operations
     if unsafe { isatty(STDOUT_FILENO) } != 1 {
