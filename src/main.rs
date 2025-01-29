@@ -2,6 +2,38 @@ use std::path::Path;
 
 use walkdir::WalkDir;
 
+use libc::{ioctl, isatty, STDOUT_FILENO, TIOCGWINSZ};
+
+// pub fn get_terminal_width() -> Option<u16> {
+//     let fd = STDIN_FILENO;
+//     let mut ws: libc::winsize = unsafe { std::mem::zeroed() };
+//
+//     unsafe {
+//         if ioctl(fd, TIOCGWINSZ, &mut ws as *mut _) != -1 {
+//             return Some(u16::try_from(ws.ws_col).ok()?);
+//         }
+//     }
+//
+//     None
+// }
+pub fn get_terminal_width() -> Option<u16> {
+    // Check if stdout is a terminal first to avoid unnecessary unsafe operations
+    if unsafe { isatty(STDOUT_FILENO) } != 1 {
+        return None;
+    }
+
+    // Isolate the unsafe code in a small, well-defined block
+    let ws = unsafe {
+        let mut ws: libc::winsize = std::mem::zeroed();
+        if ioctl(STDOUT_FILENO, TIOCGWINSZ, &mut ws) != 0 {
+            return None;
+        }
+        ws
+    };
+
+    Some(ws.ws_col)
+}
+
 #[derive(Debug)]
 struct Distribution {
     min: u64,
@@ -85,11 +117,11 @@ fn print_distribution(dist: &Distribution) {
     );
 }
 
-fn plot_box_diagram(dist: &Distribution, max_value: u64) {
+fn plot_box_diagram(dist: &Distribution, max_value: u64, width: u16) {
     let light_shade = "\u{2591}"; // use between min and lower quartile, and upper quartile and max
     let medium_shade = "\u{2592}"; // use between lower quartile and median, and median and upper quartile
     let dark_shade = "\u{2593}"; // use for median
-    let cli_width = 100;
+    let cli_width = width as usize - 40;
 
     let min = (dist.min as f64 / max_value as f64 * cli_width as f64).round() as usize;
     let lower_quartile =
@@ -138,5 +170,5 @@ fn main() {
     println!("Number of files: {}", sizes.len());
     let dist = calculate_distribution(sizes);
     print_distribution(&dist);
-    plot_box_diagram(&dist, dist.max);
+    plot_box_diagram(&dist, dist.max, get_terminal_width().unwrap_or(80));
 }
