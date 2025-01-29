@@ -31,6 +31,35 @@ struct Distribution {
     upper_quartile: f64,
 }
 
+impl Distribution {
+    fn from_vec(sizes: Vec<u64>) -> Distribution {
+        let mut sizes = sizes;
+        sizes.sort();
+        Distribution {
+            min: sizes[0],
+            max: sizes[sizes.len() - 1],
+            median: if sizes.len() % 2 == 0 {
+                let mid = sizes.len() / 2;
+                (sizes[mid - 1] + sizes[mid]) as f64 / 2.0
+            } else {
+                sizes[sizes.len() / 2] as f64
+            },
+            lower_quartile: if sizes.len() % 4 == 0 {
+                let mid = sizes.len() / 4;
+                (sizes[mid - 1] + sizes[mid]) as f64 / 2.0
+            } else {
+                sizes[sizes.len() / 4] as f64
+            },
+            upper_quartile: if sizes.len() % 4 == 0 {
+                let mid = sizes.len() * 3 / 4;
+                (sizes[mid - 1] + sizes[mid]) as f64 / 2.0
+            } else {
+                sizes[sizes.len() * 3 / 4] as f64
+            },
+        }
+    }
+}
+
 fn process_dir(path: &Path) -> Vec<u64> {
     WalkDir::new(path)
         .into_iter()
@@ -44,53 +73,21 @@ fn process_dir(path: &Path) -> Vec<u64> {
         .collect::<Vec<_>>()
 }
 
-fn calculate_distribution(sizes: Vec<u64>) -> Distribution {
-    let mut sizes = sizes;
-    sizes.sort();
-    let min = sizes[0];
-    let max = sizes[sizes.len() - 1];
-    let median = if sizes.len() % 2 == 0 {
-        let mid = sizes.len() / 2;
-        (sizes[mid - 1] + sizes[mid]) as f64 / 2.0
-    } else {
-        sizes[sizes.len() / 2] as f64
-    };
-    let lower_quartile = if sizes.len() % 4 == 0 {
-        let mid = sizes.len() / 4;
-        (sizes[mid - 1] + sizes[mid]) as f64 / 2.0
-    } else {
-        sizes[sizes.len() / 4] as f64
-    };
-    let upper_quartile = if sizes.len() % 4 == 0 {
-        let mid = sizes.len() * 3 / 4;
-        (sizes[mid - 1] + sizes[mid]) as f64 / 2.0
-    } else {
-        sizes[sizes.len() * 3 / 4] as f64
-    };
-    Distribution {
-        min,
-        max,
-        median,
-        lower_quartile,
-        upper_quartile,
-    }
-}
-
 fn print_distribution(dist: &Distribution) {
     println!(
         "Smallest:       {:#.2}",
         byte_unit::AdjustedByte::from(byte_unit::Byte::from_u64(dist.min))
     );
     println!(
-        "Median:         {:#.2}",
-        byte_unit::AdjustedByte::from(
-            byte_unit::Byte::from_f64(dist.median.round()).expect("Invalid median")
-        )
-    );
-    println!(
         "Lower Quartile: {:#.2}",
         byte_unit::AdjustedByte::from(
             byte_unit::Byte::from_f64(dist.lower_quartile.round()).expect("Invalid lower quartile")
+        )
+    );
+    println!(
+        "Median:         {:#.2}",
+        byte_unit::AdjustedByte::from(
+            byte_unit::Byte::from_f64(dist.median.round()).expect("Invalid median")
         )
     );
     println!(
@@ -156,7 +153,7 @@ fn main() {
         return;
     }
     println!("Number of files: {}", sizes.len());
-    let dist = calculate_distribution(sizes);
+    let dist = Distribution::from_vec(sizes);
     print_distribution(&dist);
     plot_box_diagram(&dist, dist.max, get_terminal_width().unwrap_or(80));
 }
