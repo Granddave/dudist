@@ -57,19 +57,31 @@ fn calculate_distribution(sizes: Vec<u64>) -> Distribution {
 }
 
 fn print_distribution(dist: &Distribution) {
-    println!("Min: {}", byte_unit::Byte::from_u64(dist.min));
-    println!("Max: {}", byte_unit::Byte::from_u64(dist.max));
     println!(
-        "Median: {:?}",
-        byte_unit::Byte::from_f64(dist.median.round())
+        "Smallest:       {:#.2}",
+        byte_unit::AdjustedByte::from(byte_unit::Byte::from_u64(dist.min))
     );
     println!(
-        "Lower Quartile: {:?}",
-        byte_unit::Byte::from_f64(dist.lower_quartile.round())
+        "Median:         {:#.2}",
+        byte_unit::AdjustedByte::from(
+            byte_unit::Byte::from_f64(dist.median.round()).expect("Invalid median")
+        )
     );
     println!(
-        "Upper Quartile: {:?}",
-        byte_unit::Byte::from_f64(dist.upper_quartile.round())
+        "Lower Quartile: {:#.2}",
+        byte_unit::AdjustedByte::from(
+            byte_unit::Byte::from_f64(dist.lower_quartile.round()).expect("Invalid lower quartile")
+        )
+    );
+    println!(
+        "Upper Quartile: {:#.2}",
+        byte_unit::AdjustedByte::from(
+            byte_unit::Byte::from_f64(dist.upper_quartile.round()).expect("Invalid upper quartile")
+        )
+    );
+    println!(
+        "Largest:        {:#.2}",
+        byte_unit::AdjustedByte::from(byte_unit::Byte::from_u64(dist.max))
     );
 }
 
@@ -77,7 +89,7 @@ fn plot_box_diagram(dist: &Distribution, max_value: u64) {
     let light_shade = "\u{2591}"; // use between min and lower quartile, and upper quartile and max
     let medium_shade = "\u{2592}"; // use between lower quartile and median, and median and upper quartile
     let dark_shade = "\u{2593}"; // use for median
-    let cli_width = 200;
+    let cli_width = 100;
 
     let min = (dist.min as f64 / max_value as f64 * cli_width as f64).round() as usize;
     let lower_quartile =
@@ -87,7 +99,7 @@ fn plot_box_diagram(dist: &Distribution, max_value: u64) {
         (dist.upper_quartile as f64 / max_value as f64 * cli_width as f64).round() as usize;
     let max = (dist.max as f64 / max_value as f64 * cli_width as f64).round() as usize;
     print!(
-        "Min: {:#.2} ",
+        "Smallest: {:#.2} ",
         byte_unit::AdjustedByte::from(byte_unit::Byte::from_u64(dist.min))
     );
     for _ in 0..min {
@@ -110,7 +122,7 @@ fn plot_box_diagram(dist: &Distribution, max_value: u64) {
         print!(" ");
     }
     println!(
-        " Max: {:#.2}",
+        " Largest: {:#.2}",
         byte_unit::AdjustedByte::from(byte_unit::Byte::from_u64(dist.max))
     );
 }
@@ -119,8 +131,12 @@ fn main() {
     let args: Vec<String> = std::env::args().collect();
     let path = Path::new(args.get(1).expect("Please provide a path"));
     let sizes = process_dir(&path);
+    if sizes.is_empty() {
+        println!("No files found in the directory");
+        return;
+    }
+    println!("Number of files: {}", sizes.len());
     let dist = calculate_distribution(sizes);
     print_distribution(&dist);
-    println!("{:?}", dist);
     plot_box_diagram(&dist, dist.max);
 }
