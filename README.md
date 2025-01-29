@@ -10,5 +10,5 @@ Median:         1.77 MiB
 Lower Quartile: 418.2 KiB
 Upper Quartile: 3.26 MiB
 Largest:        6.62 MiB
-Smallest: 9.16 KiB ░░░░▒▒▒▒▒▒▒▒▒▒▒▒▒▓▒▒▒▒▒▒▒▒▒▒▒▒▒▒░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░ Largest: 6.62 MiB
+Smallest: 9.16 KiB ░░░▒▒▒▒▒▒▒▒▒▒▓▒▒▒▒▒▒▒▒▒▒░░░░░░░░░░░░░░░░░░░░░░░░ Largest: 6.62 MiB
 ```
