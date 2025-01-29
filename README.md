@@ -12,3 +12,7 @@ Upper Quartile: 3.26 MiB
 Largest:        6.62 MiB
 Smallest: 9.16 KiB ░░░▒▒▒▒▒▒▒▒▒▒▓▒▒▒▒▒▒▒▒▒▒░░░░░░░░░░░░░░░░░░░░░░░░ Largest: 6.62 MiB
 ```
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details
